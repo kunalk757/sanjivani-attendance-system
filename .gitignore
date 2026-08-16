@@ -1,0 +1,16 @@
+students/
+attendance.csv
+attendance.xlsx
+
+__pycache__/
+*.pyc
+
+*.backup
+*.working_backup
+*.bak
+
+*.zip
+
+.env
+.venv/
+venv/
