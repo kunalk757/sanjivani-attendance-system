@@ -1,0 +1,15 @@
+# Sanjivani Attendance System - Python Dependencies
+# Core Computer Vision & Face Recognition (includes cv2.face module for LBPH)
+opencv-contrib-python>=4.8.0,<5.0.0
+
+# Numerical arrays and image data handling
+numpy>=1.24.0
+
+# Excel workbook generation and management (.xlsx)
+openpyxl>=3.1.0
+
+# Image handling support
+Pillow>=10.0.0
+
+# Packaging tool for generating standalone Windows executable (optional for runtime)
+pyinstaller>=6.0.0

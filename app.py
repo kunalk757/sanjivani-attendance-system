@@ -9,12 +9,37 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import cv2
 import os
+import sys
+import traceback
 import csv
 import time
 import numpy as np
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    err_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    try:
+        with open("crash_log.txt", "w", encoding="utf-8") as f:
+            f.write(err_msg)
+    except Exception:
+        pass
+
+sys.excepthook = handle_exception
+
+# Set working directory to the application directory (for standalone executable and script execution)
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(os.path.abspath(sys.executable))
+    try:
+        os.chdir(BASE_DIR)
+    except Exception:
+        pass
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Enable Windows High-DPI awareness for crisp typography and borders
 try:
@@ -26,6 +51,14 @@ except Exception:
         ctypes.windll.user32.SetProcessDPIAware()
     except Exception:
         pass
+
+# Set explicit Windows AppUserModelID for consistent Taskbar icon display and grouping
+try:
+    import ctypes
+    app_user_model_id = "Sanjivani.Attendance.System.2.0"
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_user_model_id)
+except Exception:
+    pass
 
 import send_email
 
@@ -49,11 +82,24 @@ CONFIDENCE_THRESHOLD = 70
 # BACKEND AI & FILE MANAGEMENT (100% Preserved)
 # ============================================================
 
+def get_resource_path(relative_path):
+    """Get absolute path to bundled static resource (e.g. haar cascade, icon)."""
+    if hasattr(sys, '_MEIPASS'):
+        bundle_path = os.path.join(sys._MEIPASS, relative_path)
+        if os.path.exists(bundle_path):
+            return bundle_path
+    local_path = os.path.join(BASE_DIR, relative_path)
+    if os.path.exists(local_path):
+        return local_path
+    return relative_path
+
+
 def load_face_detector():
     """Load Haar Cascade face detector with automatic fallback."""
-    cascade_path = CASCADE_FILE
+    cascade_path = get_resource_path(CASCADE_FILE)
     if not os.path.exists(cascade_path) or os.path.getsize(cascade_path) == 0:
-        cascade_path = cv2.data.haarcascades + CASCADE_FILE
+        if hasattr(cv2, 'data') and hasattr(cv2.data, 'haarcascades'):
+            cascade_path = os.path.join(cv2.data.haarcascades, CASCADE_FILE)
     detector = cv2.CascadeClassifier(cascade_path)
     return detector
 
@@ -72,7 +118,14 @@ def open_camera():
 
 
 def initialize_storage_files():
-    """Ensure both attendance.csv and attendance.xlsx exist with headers."""
+    """Ensure students/ directory and both attendance.csv and attendance.xlsx exist with headers."""
+    # Ensure students directory exists
+    if not os.path.exists(STUDENT_FOLDER):
+        try:
+            os.makedirs(STUDENT_FOLDER, exist_ok=True)
+        except Exception:
+            pass
+
     # 1. CSV
     if not os.path.exists(ATTENDANCE_CSV) or os.path.getsize(ATTENDANCE_CSV) == 0:
         with open(ATTENDANCE_CSV, mode='w', newline='', encoding='utf-8') as f:
@@ -248,6 +301,34 @@ class SanjivaniAttendanceApp:
         self.root.title("SANJIVANI ATTENDANCE — AI-Powered Face Recognition & Smart Attendance Management")
         self.root.geometry("1260x780")
         self.root.minsize(1100, 700)
+
+        # Set Window & Taskbar Icon (Multi-Resolution)
+        icon_path = get_resource_path("sanjivani.ico")
+        if not os.path.exists(icon_path):
+            icon_path = get_resource_path("icon.ico")
+        if os.path.exists(icon_path):
+            try:
+                self.root.iconbitmap(default=icon_path)
+            except Exception:
+                try:
+                    self.root.iconbitmap(icon_path)
+                except Exception:
+                    pass
+
+        png_path = get_resource_path("sanjivani.png")
+        if not os.path.exists(png_path):
+            png_path = get_resource_path("icon.png")
+        if os.path.exists(png_path):
+            try:
+                from PIL import ImageTk, Image
+                self._app_icon_photo = ImageTk.PhotoImage(Image.open(png_path))
+                self.root.iconphoto(True, self._app_icon_photo)
+            except Exception:
+                try:
+                    self._app_icon_photo = tk.PhotoImage(file=png_path)
+                    self.root.iconphoto(True, self._app_icon_photo)
+                except Exception:
+                    pass
 
         # ----------------------------------------------------
         # REFINED PROFESSIONAL COLOR PALETTE

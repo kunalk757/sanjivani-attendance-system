@@ -1,16 +1,60 @@
+# ============================================================
+# Python & Virtual Environments
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# ============================================================
+# PyInstaller & Build Artifacts
+# ============================================================
+build/
+dist/
+*.manifest
+*.spec.bak
+crash_log.txt
+
+# ============================================================
+# Backup & Temporary Work Files
+# ============================================================
+*.backup
+*.package_backup
+*.working_backup
+*.bak
+*.tmp
+*.temp
+*.swp
+*.zip
+
+# ============================================================
+# IDE & Editor Temporary Files
+# ============================================================
+.vscode/
+.idea/
+.vs/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ============================================================
+# Operating System Files
+# ============================================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# ============================================================
+# Local Data & Private Attendance Files (keep local, do not commit)
+# ============================================================
 students/
 attendance.csv
 attendance.xlsx
-
-__pycache__/
-*.pyc
-
-*.backup
-*.working_backup
-*.bak
-
-*.zip
-
-.env
-.venv/
-venv/
